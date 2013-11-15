@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:TitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009" 
+			   xmlns:s="library://ns.adobe.com/flex/spark" 
+			   xmlns:mx="library://ns.adobe.com/flex/mx"
+				width="700" height="400" close="closeWindow()" creationComplete="centerWindow()"
+				fontSize="14" fontWeight="normal"
+				title="属性"
+				xmlns:view="com.taobao.tbbpm.view.*"
+				>
+	
+	<fx:Script>
+        <![CDATA[
+			import com.taobao.tbbpm.controller.Controller;
+			import com.taobao.tbbpm.define.flash.FParameterDefine;
+			import com.taobao.tbbpm.define.flash.impl.FAction;
+			import com.taobao.tbbpm.define.flash.impl.FAutoTaskNode;
+			
+			import mx.collections.ArrayCollection;
+			import mx.controls.Alert;
+			import mx.managers.PopUpManager;
+			
+			import spark.events.IndexChangeEvent;
+			import spark.events.TextOperationEvent;
+			
+			[Bindable]public var autoTaskNode:FAutoTaskNode;
+			
+			[Bindable] private var dataArray:ArrayCollection = new ArrayCollection();
+			[Bindable]private var controller:Controller = Controller.getInstance();
+            public function centerWindow():void
+            {
+				dataArray.addItem("spring-bean");
+				dataArray.addItem("java");
+				dataArray.addItem("php");
+				dataArray.addItem("c#");
+				this.x = Capabilities.screenResolutionX / 2 - this.width / 2;
+				this.y = Capabilities.screenResolutionY / 2 - this.height / 2 - 50;
+            }
+            
+            public function closeWindow():void
+            {
+            	PopUpManager.removePopUp(this);
+            }
+			
+			protected function dataType_changeHandler(event:IndexChangeEvent):void
+			{
+				if(autoTaskNode.action==null){
+					autoTaskNode.action = new FAction();
+				}
+				autoTaskNode.action.type = type.selectedItem;
+			}
+			
+			protected function bs_changeHandler(event:TextOperationEvent):void
+			{
+				autoTaskNode.action.actionHandle.bc = bc.text;
+			}
+			protected function method_changeHandler(event:TextOperationEvent):void
+			{
+				
+				autoTaskNode.action.actionHandle.method = method.text;
+			}
+			
+			private function canSet():Boolean{
+				if(autoTaskNode.action==null||autoTaskNode.action.actionHandle==null){
+					Alert.show("请先填写type");
+					return false;
+				}
+				return true;
+			}
+			
+			protected function add_clickHandler(event:MouseEvent):void
+			{
+				if(autoTaskNode.action==null||autoTaskNode.action.type==null){
+					Alert.show("请先填写type");
+					return;
+				}
+				var p:FParameterDefine = new FParameterDefine();
+				p.name = "";
+				p.dataType = "";
+				p.defaultValue = "";
+				p.inOutType = "";
+				p.description = "";
+				autoTaskNode.action.actionHandle.vars.push(p);
+				globalProperty.dataProvider = autoTaskNode.action.actionHandle.vars;
+			}
+			
+			protected function delete_clickHandler(event:MouseEvent):void
+			{
+				(globalProperty.dataProvider as ArrayCollection).removeItemAt( globalProperty.selectedIndex );    
+				globalProperty.selectedIndex = globalProperty.dataProvider.length ;
+				(globalProperty.dataProvider as ArrayCollection).enableAutoUpdate();
+			}
+		]]>
+       
+	</fx:Script>
+	<mx:TabNavigator width="100%" height="100%">
+		<view:BasicProperty  mNode="{autoTaskNode}" />
+		<mx:Canvas width="100%" height="100%" label="action设置">
+			<s:Form left="10" right="10" top="10" bottom="10">
+				<s:HGroup width="100%" verticalAlign="middle">
+						<s:Label text="Type:"/>
+						<s:ComboBox id="type" width="100" change="dataType_changeHandler(event)"
+									dataProvider="{dataArray}" prompt="{autoTaskNode.action.type}"/>
+					    <s:Label text="Bean/Class:"/>
+					    <s:TextInput id="bc" change="bs_changeHandler(event)" text="{autoTaskNode.action.actionHandle.bc}"/>
+					    <s:Label text="Method:"/>
+					    <s:TextInput id="method" change="method_changeHandler(event)" text="{autoTaskNode.action.actionHandle.method}"/>
+				</s:HGroup>
+				<s:HGroup width="100%" horizontalAlign="right" verticalAlign="middle">
+					<s:Button x="431" y="10" label="添加" click="add_clickHandler(event)"/>
+					<s:Button x="512" y="9" label="删除" click="delete_clickHandler(event)"/>
+				</s:HGroup>
+				<s:HGroup width="100%" horizontalAlign="center" verticalAlign="middle">
+				<mx:DataGrid id="globalProperty"
+							 dataProvider="{autoTaskNode.action.actionHandle.vars}"
+							 editable="true" enabled="true">
+					<mx:columns>
+						<mx:DataGridColumn width="110" dataField="name" headerText="name"/>
+						<mx:DataGridColumn width="150" dataField="dataType" editable="false"
+										   headerText="dataType"
+										   itemRenderer="com.taobao.tbbpm.view.DataTypeList"/>
+						<mx:DataGridColumn width="100" dataField="defaultValue"
+										   headerText="defaultValue"/>
+						<mx:DataGridColumn width="100" dataField="inOutType" editable="false"
+										   headerText="inOutType"
+										   itemRenderer="com.taobao.tbbpm.view.InOutTypeList"/>
+						<mx:DataGridColumn width="100" dataField="description"
+										   headerText="description"/>
+						<mx:DataGridColumn width="100" dataField="contextVarName" editable="false"
+										   headerText="contextVarName"
+										   itemRenderer="com.taobao.tbbpm.view.ContextVars"/>
+					</mx:columns>
+				</mx:DataGrid>
+				</s:HGroup>
+			</s:Form>
+		</mx:Canvas>
+	</mx:TabNavigator>
+	
+	
+</s:TitleWindow>

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:MXDataGridItemRenderer xmlns:fx="http://ns.adobe.com/mxml/2009" 
+						  xmlns:s="library://ns.adobe.com/flex/spark" 
+						  xmlns:mx="library://ns.adobe.com/flex/mx" 
+						  focusEnabled="true"
+						  creationComplete="init()"
+						  width="140">
+	<fx:Script>
+		<![CDATA[
+			import mx.collections.ArrayCollection;
+			
+			import spark.events.IndexChangeEvent;
+			[Bindable] private var dataArray:ArrayCollection = new ArrayCollection();
+			
+			public function init():void{
+				dataArray.addItem("java.lang.String");
+				dataArray.addItem("byte");
+				dataArray.addItem("java.lang.Byte");
+				dataArray.addItem("short");
+				dataArray.addItem("java.lang.Short");
+				dataArray.addItem("int");
+				dataArray.addItem("java.lang.Integer");
+				dataArray.addItem("long");
+				dataArray.addItem("java.lang.Long");
+				dataArray.addItem("float");
+				dataArray.addItem("java.lang.Float");
+				dataArray.addItem("double");
+				dataArray.addItem("java.lang.Double");
+				dataArray.addItem("char");
+				dataArray.addItem("java.lang.Character");
+				dataArray.addItem("boolean");
+				dataArray.addItem("java.lang.Boolean");
+			}
+			
+			protected function combobox_changeHandler(event:IndexChangeEvent):void
+			{
+				data.dataType = dataType.selectedItem;
+			}
+			
+		]]>
+	</fx:Script>
+	<s:ComboBox width="140" id="dataType" dataProvider="{dataArray}" change="combobox_changeHandler(event)" prompt="{data.dataType}"/>
+</s:MXDataGridItemRenderer>

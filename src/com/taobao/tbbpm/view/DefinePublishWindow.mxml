@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:TitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009" 
+				xmlns:s="library://ns.adobe.com/flex/spark" 
+				xmlns:mx="library://ns.adobe.com/flex/mx" width="400" height="200" 
+	creationComplete="centerWindow()" title="全局属性" close="closeWindow()" fontWeight="normal"  fontSize="14" xmlns:savedf="services.savedf.*">
+	
+	<fx:Script>
+        <![CDATA[
+			import com.taobao.tbbpm.controller.Controller;
+			import com.taobao.tbbpm.define.flash.FParameterDefine;
+			
+			import mx.collections.ArrayCollection;
+			import mx.controls.Alert;
+			import mx.managers.PopUpManager;
+			
+			public var diagramId:String;
+			
+			[Bindable]private var controller:Controller = Controller.getInstance();
+			
+            public function centerWindow():void
+            {
+				this.x = Capabilities.screenResolutionX / 2 - this.width / 2;
+				this.y = Capabilities.screenResolutionY / 2 - this.height / 2 - 50;
+            }
+            
+            public function closeWindow():void
+            {
+            	PopUpManager.removePopUp(this);
+            }
+			
+			protected function publishButton_clickHandler(event:MouseEvent):void
+			{
+				saveDFResult.token = saveDF.publishDf(domain.text,diagramId);
+				
+			}
+			
+		]]>
+       
+	</fx:Script>
+	<fx:Declarations>
+	<s:CallResponder id="saveDFResult"/>
+		<savedf:SaveDF id="saveDF"
+					   fault="Alert.show(event.fault.faultString + '\n' + event.fault.faultDetail)"
+					   showBusyCursor="true"/>
+	</fx:Declarations>	
+	<s:HGroup  verticalAlign="middle">
+			<s:Form left="10" right="10" top="10" bottom="10">
+				<s:FormItem label="流程域">
+					<mx:TextInput id="domain" width="200" />
+				</s:FormItem>
+			</s:Form>
+	        <s:Button id="publishButton" width="50" label="发布"
+					  click="publishButton_clickHandler(event)"/>
+	</s:HGroup>
+	<s:TextArea x="10" y="72" width="378" height="84" text="{saveDFResult.lastResult}"/>
+</s:TitleWindow>

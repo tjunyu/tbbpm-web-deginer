@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:MXDataGridItemRenderer xmlns:fx="http://ns.adobe.com/mxml/2009" 
+						  xmlns:s="library://ns.adobe.com/flex/spark" 
+						  xmlns:mx="library://ns.adobe.com/flex/mx" 
+						  focusEnabled="true"
+						  creationComplete="init()">
+	<fx:Script>
+		<![CDATA[
+			import mx.collections.ArrayCollection;
+			
+			import spark.events.IndexChangeEvent;
+			[Bindable] private var dataArray:ArrayCollection = new ArrayCollection();
+			
+			public function init():void{
+				dataArray.addItem("param");
+				dataArray.addItem("inner");
+				dataArray.addItem("return");
+			}
+			
+			protected function dataType_changeHandler(event:IndexChangeEvent):void
+			{
+				data.inOutType = dataType.selectedItem;
+			}
+			
+		]]>
+	</fx:Script>
+	<s:ComboBox id="dataType" width="80" change="dataType_changeHandler(event)"   prompt="{data.inOutType}"
+				dataProvider="{dataArray}"/>
+</s:MXDataGridItemRenderer>

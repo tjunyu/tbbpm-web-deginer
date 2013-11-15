@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009"
+		 xmlns:s="library://ns.adobe.com/flex/spark"
+		 xmlns:mx="library://ns.adobe.com/flex/mx"
+		 implements="com.taobao.tbbpm.define.figure.Figure"
+		 creationComplete="init(event)" 
+		 keyDown="keyDownHandler(event)"
+		 mouseFocusChange="{operator.mouseFocusChangeHandler(event)}">
+	<s:layout>
+		<s:VerticalLayout horizontalAlign="center"/>
+	</s:layout>
+	<fx:Script>
+		<![CDATA[
+			import com.taobao.tbbpm.TbbpmTheme;
+			import com.taobao.tbbpm.controller.Controller;
+			import com.taobao.tbbpm.define.flash.FMNode;
+			import com.taobao.tbbpm.define.flash.impl.FDecisionNode;
+			import com.taobao.tbbpm.view.DecisionNodePropertyWindow;
+			
+			import mx.events.FlexEvent;
+			import mx.managers.PopUpManager;
+			[Bindable]private var operator:FigureOperator = new FigureOperator;
+			private var controller:Controller = Controller.getInstance();
+			public function getMNode():FMNode
+			{
+				return operator.mnode;
+			}
+			
+			public function getOperator():FigureOperator
+			{
+				return operator;
+			}
+			override protected function keyDownHandler(event:KeyboardEvent):void
+			{
+				operator.keyDownHandler(event);
+			}
+			public function onDelete():void
+			{
+				operator.onDelete();
+				
+			}
+			public function setWH(width:int,height:int):void
+			{
+				this.width = width;
+				this.height =height;
+				
+			}
+			public function setXY(x:int, y:int):void
+			{
+				this.x = x; this.y = y;
+				operator.setG(this);
+			}
+			public function setMNode(mNode:FMNode):void
+			{
+				operator.mnode = mNode;
+				
+			}
+			public function init(event:FlexEvent):void{
+				
+				
+				
+				fillColor(0xf5f5f5,this.width,this.height,0);
+				fillColor(0xebebeb,this.width,this.height,1);
+				fillColor(0xe1e1e1,this.width,this.height,2);
+				fillColor(0xffffff,this.width,this.height,3);
+				fillColor(0xffffff,this.width,this.height,4);
+				fillColor(0xF79646,this.width,this.height,5);
+				
+				
+				
+				
+				operator.setNodeFigure(this);
+				this.contextMenu=controller.createContextMenu();
+				this.contextMenu=controller.addContextMenu(this.contextMenu,"属性编辑",openProperty);
+			}
+			protected function openProperty(event:ContextMenuEvent):void
+			{
+				var titleWindow:DecisionNodePropertyWindow = PopUpManager.createPopUp(this, DecisionNodePropertyWindow, true)  as  DecisionNodePropertyWindow;
+				titleWindow.decisionNode = operator.mnode as FDecisionNode;			
+				PopUpManager.centerPopUp(titleWindow);
+			}
+			
+			private function fillColor(color:uint,width:int,height:int,g:int):void
+			{
+//				var h:int=this.width/2;  
+//				var w:int=this.height/2;  
+				this.graphics.beginFill(color);  
+				this.graphics.moveTo(g,0+height*0.5);//移动到某个点 （左边的中点）  
+				this.graphics.lineStyle(0,color);
+				this.graphics.lineTo(0+width*0.5,g);//移动到上边中点  
+				this.graphics.lineTo(width-g,0+this.height*0.5);//移动到右边中点  
+				this.graphics.lineTo(0+width*0.5,0+this.height-g);//下边的中点  
+				this.graphics.lineTo(g,height*0.5);//移动到起始点  
+				this.graphics.endFill();
+				
+			}
+			
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<!-- 将非可视元素（例如服务、值对象）放在此处 -->
+	</fx:Declarations>
+	<s:BorderContainer id="node" width="100%" height="100%" backgroundAlpha="0.0"
+					   borderVisible="false"
+					   minWidth="0" minHeight="0"
+					   mouseDown="{operator.mouseDownHandler(event)}"
+					   mouseUp="{operator.mouseUpHandler(event)}"
+					   mouseOver="{operator.arrowVisible=true}"
+					   mouseOut="{operator.arrowVisible=false}">
+		
+		
+		<s:Label horizontalCenter="0" verticalCenter="0" text="{operator.mnode.name}"/>
+		<s:Image id="rightArrow" visible="{operator.arrowVisible}"
+				 right="0" 
+				 verticalCenter="0"
+				 source="{TbbpmTheme.arrow_node}"
+				 rotation="0" 
+				 mouseDown="operator.arrowMouseDownHandler(event,TbbpmLineFigure.right)"  
+				 mouseUp="operator.arrowMouseUpHandler(event,TbbpmLineFigure.right)"/>
+		<s:Image id="bottomArrow" visible="{operator.arrowVisible}"
+				 horizontalCenter="0"
+				 bottom="0"  
+				 source="{TbbpmTheme.arrow_node}"
+				 rotation="90" 
+				 mouseDown="operator.arrowMouseDownHandler(event,TbbpmLineFigure.bottom)"  
+				 mouseUp="operator.arrowMouseUpHandler(event,TbbpmLineFigure.bottom)"/>
+		<s:Image id="leftArrow" visible="{operator.arrowVisible}"
+				 left="0"
+				 verticalCenter="0"
+				 source="{TbbpmTheme.arrow_node}"
+				 rotation="180" 
+				 mouseDown="operator.arrowMouseDownHandler(event,TbbpmLineFigure.left)"
+				 mouseUp="operator.arrowMouseUpHandler(event,TbbpmLineFigure.left)"/>
+		<s:Image id="topArrow" visible="{operator.arrowVisible}"
+				 horizontalCenter="0"
+				 top="0"  
+				 source="{TbbpmTheme.arrow_node}"
+				 rotation="270" 
+				 mouseDown="operator.arrowMouseDownHandler(event,TbbpmLineFigure.top)"  
+				 mouseUp="operator.arrowMouseUpHandler(event,TbbpmLineFigure.top)"/>
+		
+	</s:BorderContainer>
+</s:Group>

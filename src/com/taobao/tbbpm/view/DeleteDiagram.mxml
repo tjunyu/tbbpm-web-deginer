@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:MXDataGridItemRenderer xmlns:fx="http://ns.adobe.com/mxml/2009" 
+						  xmlns:s="library://ns.adobe.com/flex/spark" 
+						  xmlns:mx="library://ns.adobe.com/flex/mx" 
+						  focusEnabled="true"
+						  xmlns:savedf="services.savedf.*" width="50" height="20">
+	<fx:Script>
+		<![CDATA[
+			import mx.collections.ArrayCollection;
+			import mx.controls.Alert;
+			import mx.controls.DataGrid;
+			import mx.events.CloseEvent;
+			
+			protected function deletebutton_clickHandler(event:MouseEvent):void
+			{
+				Alert.show("确认删除 '"+data.name+"' ?","确认删除",Alert.YES|Alert.NO,null,deleteDo);  
+			}
+			private function deleteDo(e:CloseEvent):void{
+				
+				
+				if(e.detail == Alert.YES)  
+				{  
+					saveDF.deleteDiagram(data.id);
+					var myDataG:DataGrid = DataGrid(parent.parent);
+					(myDataG.dataProvider as ArrayCollection).removeItemAt( myDataG.selectedIndex );    
+					myDataG.selectedIndex = myDataG.dataProvider.length ;
+					(myDataG.dataProvider as ArrayCollection).enableAutoUpdate();
+				} 
+			}
+			
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<s:CallResponder id="saveDFResult"/>
+		<savedf:SaveDF id="saveDF"
+					   fault="Alert.show(event.fault.faultString + '\n' + event.fault.faultDetail)"
+					   showBusyCursor="true"/>
+	</fx:Declarations>
+	<s:Button id="deletebutton" width="50" height="20" label="删除"
+			  click="deletebutton_clickHandler(event)"/>
+	<s:Label text="{saveDFResult.lastResult}" />
+</s:MXDataGridItemRenderer>

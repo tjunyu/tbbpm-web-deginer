@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:TitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009" 
+				xmlns:s="library://ns.adobe.com/flex/spark" 
+				xmlns:mx="library://ns.adobe.com/flex/mx" 
+				width="700" height="400" close="closeWindow()" creationComplete="centerWindow()"
+				fontSize="14" fontWeight="normal" 
+				title="属性"
+				xmlns:view="com.taobao.tbbpm.view.*"
+				>
+	
+	<fx:Script>
+        <![CDATA[
+			import com.taobao.tbbpm.define.flash.FTransition;
+			
+			import mx.managers.PopUpManager;
+			
+			[Bindable]public var line:FTransition;
+			
+            public function centerWindow():void
+            {
+				this.x = Capabilities.screenResolutionX / 2 - this.width / 2;
+				this.y = Capabilities.screenResolutionY / 2 - this.height / 2 - 50;
+            }
+            
+            public function closeWindow():void
+            {
+            	PopUpManager.removePopUp(this);
+            }
+		]]>
+       
+	</fx:Script>
+	<mx:TabNavigator width="100%" height="100%">
+		<mx:Canvas width="100%" height="100%" label="属性设置">
+			<s:Form left="10" right="10" top="10" bottom="10">
+				<s:FormItem label="name">
+					<mx:TextInput  width="200" text="@{line.name}"/>
+				</s:FormItem>
+				<s:FormItem label="expression">
+					<mx:TextInput  width="200" text="@{line.expression}"/>
+				</s:FormItem>
+				<s:FormItem label="priority">
+					<mx:TextInput  width="200" text="@{line.priority}"/>
+				</s:FormItem>
+			</s:Form>
+		</mx:Canvas>
+	</mx:TabNavigator>
+	
+	
+</s:TitleWindow>

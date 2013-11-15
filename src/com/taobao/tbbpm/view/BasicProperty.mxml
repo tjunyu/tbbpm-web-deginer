@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx" width="100%" height="100%"
+		 label="基本属性"
+		 creationComplete="init()"
+		>
+	<fx:Script>
+		<![CDATA[
+			import com.taobao.tbbpm.define.flash.FMNode;
+			
+			import mx.collections.ArrayCollection;
+			
+			import spark.events.IndexChangeEvent;
+			[Bindable] private var dataArray:ArrayCollection = new ArrayCollection();
+			[Bindable]public var mNode:FMNode;
+			[Bindable]private var showName:String;
+			public function init():void{
+				dataArray.addItem("无限次重试-指数间隔");
+				dataArray.addItem("有限次重试-指数间隔");
+				dataArray.addItem("无限次重试-固定间隔");
+				dataArray.addItem("有限次重试-指数间隔");
+			}
+			
+			
+			
+			protected function dataType_changeHandler(event:IndexChangeEvent):void
+			{
+				if(dataType.selectedItem=="无限次重试-指数间隔"){
+					mNode.retryType = "4";
+				}
+				else if(dataType.selectedItem=="有限次重试-指数间隔"){
+					mNode.retryType = "3";
+				}
+				else if(dataType.selectedItem=="无限次重试-固定间隔"){
+					mNode.retryType = "2";
+				}
+				else if(dataType.selectedItem=="有限次重试-指数间隔"){
+					mNode.retryType = "1";
+				}
+			}
+			[Bindable(event="creationComplete")]private function getRetryType():String{
+				if(mNode.retryType == "4"){
+					return "无限次重试-指数间隔";
+				}
+				else if(mNode.retryType == "3"){
+					return "有限次重试-指数间隔";
+				}
+				else if(mNode.retryType == "2"){
+					return "无限次重试-固定间隔";
+				}
+				else if(mNode.retryType == "1"){
+					return "有限次重试-指数间隔";
+				}
+				return "";
+			}
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<!-- 将非可视元素（例如服务、值对象）放在此处 -->
+	</fx:Declarations>
+		<s:Form left="10" right="10" top="10" bottom="10">
+			<s:FormItem label="name">
+				<mx:TextInput id="_name" width="200" text="@{mNode.name}"/>
+			</s:FormItem>
+			<s:FormItem label="retryType">
+				<s:ComboBox id="dataType" change="dataType_changeHandler(event)"  prompt="{getRetryType()}"
+							dataProvider="{dataArray}"/>
+			</s:FormItem>
+			<s:FormItem label="retryMax">
+				<mx:TextInput id="retryMax" width="200" text="@{mNode.retryMax}"/>
+			</s:FormItem>
+			<s:FormItem label="retryInterVal">
+				<mx:TextInput id="retryInterVal" width="200" text="@{mNode.retryInterVal}"/>
+			</s:FormItem>
+			<s:FormItem label="taskGroup">
+				<mx:TextInput id="taskGroup" width="200" text="@{mNode.taskGroup}"/>
+			</s:FormItem>
+		</s:Form>
+</mx:Canvas>

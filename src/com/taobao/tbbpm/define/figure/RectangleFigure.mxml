@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009"
+		 xmlns:s="library://ns.adobe.com/flex/spark"
+		 xmlns:mx="library://ns.adobe.com/flex/mx"
+		 keyDown="keyDownHandler(event)"
+		 xmlns:tbbpmNode="com.taobao.tbbpm.define.*"
+		 implements="com.taobao.tbbpm.define.figure.Figure"
+		 creationComplete="init(event)" 
+		 mouseFocusChange="{operator.mouseFocusChangeHandler(event)}"
+		 xmlns:view="com.taobao.tbbpm.view.*"
+		 >
+	<s:layout>
+		<s:VerticalLayout horizontalAlign="center"/>
+	</s:layout>
+	<fx:Script>
+		<![CDATA[
+			import com.taobao.tbbpm.TbbpmTheme;
+			import com.taobao.tbbpm.controller.Controller;
+			import com.taobao.tbbpm.define.flash.FMNode;
+			import com.taobao.tbbpm.define.figure.FigureOperator;
+			import com.taobao.tbbpm.define.flash.impl.FAutoTaskNode;
+			import com.taobao.tbbpm.view.AutoTaskNodePropertyWindow;
+			import com.taobao.tbbpm.view.GlobalPropertyWindow;
+			
+			import mx.events.FlexEvent;
+			import mx.managers.PopUpManager;
+			[Bindable]private var operator:FigureOperator = new FigureOperator;
+			private var controller:Controller = Controller.getInstance();
+			public function getMNode():FMNode
+			{
+				return operator.mnode;
+			}
+			
+			public function getOperator():FigureOperator
+			{
+				return operator;
+			}
+			override protected function keyDownHandler(event:KeyboardEvent):void
+			{
+				operator.keyDownHandler(event);
+			}
+			public function onDelete():void
+			{
+				operator.onDelete();
+				
+			}
+			public function setWH(width:int,height:int):void
+			{
+				this.width = width;
+				this.height =height;
+				
+			}
+			public function setXY(x:int, y:int):void
+			{
+				this.x = x; this.y = y;
+				operator.setG(this);
+			}
+			public function setMNode(mNode:FMNode):void
+			{
+				operator.mnode = mNode;
+				
+			}
+			public function init(event:FlexEvent):void{
+				
+				
+				this.graphics.beginFill(0xf5f5f5);
+				graphics.drawRect(0,0,this.width,this.height);
+				this.graphics.endFill();
+				
+				this.graphics.beginFill(0xebebeb);
+				graphics.drawRect(1,1,this.width-2,this.height-2);
+				this.graphics.endFill();
+				
+				this.graphics.beginFill(0xe1e1e1);
+				graphics.drawRect(2,2,this.width-4,this.height-4);
+				this.graphics.endFill();
+				
+				this.graphics.beginFill(0xffffff);
+				graphics.drawRect(3,3,this.width-6,this.height-6);
+				this.graphics.endFill();
+				
+				this.graphics.beginFill(0xffffff);
+				graphics.drawRect(4,4,this.width-8,this.height-8);
+				this.graphics.endFill();
+				
+				this.graphics.beginFill(0x4BACC6);
+				graphics.drawRect(5,5,this.width-10,this.height-10);
+				this.graphics.endFill();
+				
+				operator.setNodeFigure(this);
+				this.contextMenu=controller.createContextMenu();
+				this.contextMenu=controller.addContextMenu(this.contextMenu,"属性编辑",openProperty);
+			}
+			protected function openProperty(event:ContextMenuEvent):void
+			{
+				var titleWindow:AutoTaskNodePropertyWindow = PopUpManager.createPopUp(this, AutoTaskNodePropertyWindow, true)  as  AutoTaskNodePropertyWindow;
+				titleWindow.autoTaskNode = operator.mnode as FAutoTaskNode;			
+			}
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<!-- 将非可视元素（例如服务、值对象）放在此处 -->
+	</fx:Declarations>
+	<s:BorderContainer id="node" width="100%" height="100%" backgroundAlpha="0.0"
+					   borderVisible="false"
+					   minWidth="0" minHeight="0"
+					   mouseDown="{operator.mouseDownHandler(event)}"
+					   mouseUp="{operator.mouseUpHandler(event)}"
+					   mouseOver="{operator.arrowVisible=true}"
+					   mouseOut="{operator.arrowVisible=false}"
+					   >
+		
+		<s:Label textAlign="center" width="{this.width}" horizontalCenter="0" verticalCenter="0" text="{operator.mnode.name}"/>
+		<s:Image id="rightArrow" visible="{operator.arrowVisible}"
+				 right="0" 
+				 verticalCenter="0"
+				 source="{TbbpmTheme.arrow_node}"
+				 rotation="0" 
+				 mouseDown="operator.arrowMouseDownHandler(event,TbbpmLineFigure.right)"  
+				 mouseUp="operator.arrowMouseUpHandler(event,TbbpmLineFigure.right)"/>
+		<s:Image id="bottomArrow" visible="{operator.arrowVisible}"
+				 horizontalCenter="0"
+				 bottom="0"  
+				 source="{TbbpmTheme.arrow_node}"
+				 rotation="90" 
+				 mouseDown="operator.arrowMouseDownHandler(event,TbbpmLineFigure.bottom)"  
+				 mouseUp="operator.arrowMouseUpHandler(event,TbbpmLineFigure.bottom)"/>
+		<s:Image id="leftArrow" visible="{operator.arrowVisible}"
+				 left="0"
+				 verticalCenter="0"
+				 source="{TbbpmTheme.arrow_node}"
+				 rotation="180" 
+				 mouseDown="operator.arrowMouseDownHandler(event,TbbpmLineFigure.left)"
+				 mouseUp="operator.arrowMouseUpHandler(event,TbbpmLineFigure.left)"/>
+		<s:Image id="topArrow" visible="{operator.arrowVisible}"
+				 horizontalCenter="0"
+				 top="0"  
+				 source="{TbbpmTheme.arrow_node}"
+				 rotation="270" 
+				 mouseDown="operator.arrowMouseDownHandler(event,TbbpmLineFigure.top)"  
+				 mouseUp="operator.arrowMouseUpHandler(event,TbbpmLineFigure.top)"/>
+		
+	</s:BorderContainer>
+</s:Group>

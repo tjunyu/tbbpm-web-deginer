@@ -1,0 +1,289 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009"
+			   xmlns:s="library://ns.adobe.com/flex/spark"
+			   xmlns:mx="library://ns.adobe.com/flex/mx"
+			   xmlns:flexlib="flexlib.containers.*"
+			   xmlns:tool="com.taobao.tbbpm.tool.*"
+			   xmlns:tbbpmNode="com.taobao.tbbpm.define.*"
+			   xmlns:savedf="services.savedf.*"
+			   width="100%" height="100%" creationComplete="init(event)"
+			   mouseUp="mouseUpHandler(event)">
+	<fx:Script>
+		<![CDATA[
+			import com.adobe.serializers.json.JSONDecoder;
+			import com.adobe.serializers.json.JSONEncoder;
+			import com.taobao.tbbpm.TbbpmTheme;
+			import com.taobao.tbbpm.controller.Controller;
+			import com.taobao.tbbpm.define.figure.EllipseFigure;
+			import com.taobao.tbbpm.define.figure.Figure;
+			import com.taobao.tbbpm.define.figure.RhombusFigure;
+			import com.taobao.tbbpm.define.flash.FMNode;
+			import com.taobao.tbbpm.define.flash.impl.FAutoTaskNode;
+			import com.taobao.tbbpm.define.flash.impl.FBpmDefine;
+			import com.taobao.tbbpm.define.flash.impl.FEndNode;
+			import com.taobao.tbbpm.define.flash.impl.FStartNode;
+			import com.taobao.tbbpm.dto.Diagram;
+			import com.taobao.tbbpm.events.TbbpmEvent;
+			import com.taobao.tbbpm.tool.TbbpmTool;
+			import com.taobao.tbbpm.view.GlobalPropertyWindow;
+			
+			import hr.binaria.asx3m.Asx3mer;
+			
+			import mx.controls.Alert;
+			import mx.controls.Button;
+			import mx.core.DragSource;
+			import mx.core.UIComponent;
+			import mx.events.DragEvent;
+			import mx.events.FlexEvent;
+			import mx.managers.BrowserManager;
+			import mx.managers.DragManager;
+			import mx.managers.PopUpManager;
+			import mx.rpc.events.ResultEvent;
+			import mx.utils.URLUtil;
+			
+			import spark.components.Group;
+			import spark.events.IndexChangeEvent;
+			
+			private var controller:Controller = Controller.getInstance();
+			private var xmlc:Asx3mer = Asx3mer.instance;
+			[Bindable] private var xml:String;
+			public var tbbpmTool:TbbpmTool = new TbbpmTool();
+			protected function init(event:FlexEvent):void{
+				
+				controller.tbbpmTool = tbbpmTool;
+				controller.tbbpmTool.temporaryuic = uic;
+				controller.tbbpmTool.creationComplete();
+				controller.services = services;
+				this.controller.addEventListener(TbbpmEvent.DELETENODE,removeNode);
+				this.controller.addEventListener(TbbpmEvent.ADDNODE,addNode);
+				//				nodeGroup.addEventListener(MouseEvent.DOUBLE_CLICK,openProperty);
+				
+				this.contextMenu=controller.createContextMenu();
+				this.contextMenu=controller.addContextMenu(this.contextMenu,"全局属性编辑",openProperty);
+				addStartAndEnd();
+				var xml:mx.controls.Button = editArea.getTabAt(1);
+				xml.addEventListener(MouseEvent.MOUSE_DOWN,showXml,false);
+				
+				saveDF.getUser();
+				controller.palette = nodeGroup;
+				//				var urlrequest:URLRequest=new URLRequest("data/nodes.xml");   
+				//				var loader:URLLoader=new URLLoader();
+				//				loader.load(urlrequest);   
+				//				loader.addEventListener(Event.COMPLETE, completehandler);
+				
+			}
+			
+			private function showXml(event:MouseEvent):void
+			{
+				xml = xmlc.toXML(controller.bpmDefine,null);
+			}
+			
+			private function dragEnterHandler(event:DragEvent):void
+			{
+				var message:Array = event.dragSource.formats as Array;
+				var nodeName:String = message[0].split(",")[0];
+				if(nodeName==TbbpmTool.NODE){   
+					DragManager.acceptDragDrop(UIComponent(event.target));   
+				}else{
+					var fxml:XML = new XML(message[0]);
+					var service:FAutoTaskNode = xmlc.fromXML(fxml) as FAutoTaskNode;
+					if(service!=null&&service is FAutoTaskNode)
+						DragManager.acceptDragDrop(UIComponent(event.target));
+				}
+			}
+			private function dragDropHandler(event:DragEvent):void
+			{
+				var dragSource:DragSource=event.dragSource;
+				var message:Array = dragSource.formats as Array;
+				var nodeName:String = message[0].split(",")[0];
+				var taskNode:Figure;
+				if(nodeName==TbbpmTool.NODE){   
+					var mNode:String = message[0].split(",")[1];
+					var figure:String = message[0].split(",")[2];
+					var name:String = message[0].split(",")[3];
+					taskNode=controller.createTaskNode(mNode,figure,name);
+				}else{
+					var fxml:XML = new XML(message[0]);
+					var service:FAutoTaskNode = xmlc.fromXML(fxml) as FAutoTaskNode;
+					taskNode = controller.createServiceNode(service);
+				}
+				
+				this.addNode(new TbbpmEvent(TbbpmEvent.ADDNODE,taskNode));
+				taskNode.setXY(nodeGroup.mouseX-40,nodeGroup.mouseY-20);
+			}
+			public function node_clickHandler(event:MouseEvent,_node:Image,name:String):void
+			{
+				event.stopImmediatePropagation();
+				var serverDragSource:DragSource=new DragSource();   
+				serverDragSource.addData(_node.source,TbbpmTool.NODE+","+name);   
+				DragManager.doDrag(_node,serverDragSource,event); 
+			}
+			public function addNode(e:TbbpmEvent):void{
+				var taskNode:Figure=e.stanza as Figure;
+				nodeGroup.addElement(taskNode as Group);
+				controller.bpmDefine.nodes.push(taskNode.getMNode());
+			}
+			public function removeNode(e:TbbpmEvent):void{
+				var node:Figure=e.stanza as Figure;
+				node.onDelete();
+				nodeGroup.removeElement(node as Group);
+				var nodes:Array=controller.bpmDefine.nodes;
+				nodes.splice(nodes.indexOf(node),1);
+			}
+			protected function mouseUpHandler(event:MouseEvent):void
+			{
+				if(TbbpmTool.temporaryFlag){
+					this.controller.dispatchEvent(new TbbpmEvent(TbbpmEvent.CLEARTEMPORARYLINK,""));
+				}else{    
+				}  
+			}
+			
+			private function addStartAndEnd():void
+			{
+				var start:EllipseFigure = new EllipseFigure();
+				var startNode:FStartNode = new FStartNode();
+				startNode.id = controller.getNum().toString();
+				startNode.name = "开始节点";
+				start.setMNode(startNode);
+				start.nodeType = "start";
+				start.setWH(40,40);
+				start.setXY(120,120);
+				
+				var end:EllipseFigure = new EllipseFigure();
+				var endNode:FEndNode = new FEndNode();
+				endNode.id = controller.getNum().toString();
+				endNode.name = "结束节点";
+				end.setMNode(endNode);
+				end.setWH(40,40);
+				end.setXY(120,400);
+				this.addNode(new TbbpmEvent(TbbpmEvent.ADDNODE,start));
+				this.addNode(new TbbpmEvent(TbbpmEvent.ADDNODE,end));
+			}
+			
+			protected function openProperty(event:ContextMenuEvent):void
+			{
+				var titleWindow:GlobalPropertyWindow = PopUpManager.createPopUp(this, GlobalPropertyWindow, true)  as  GlobalPropertyWindow;
+				PopUpManager.centerPopUp(titleWindow);
+			}
+			
+			protected function save_clickHandler(event:MouseEvent):void
+			{
+				if(controller.bpmDefine.code==null||controller.bpmDefine.code.length==0){
+					Alert.show("亲 右键“全局属性编辑”的code必须填写");
+					return;
+				}
+				if(controller.bpmDefine.id!=null&&controller.bpmDefine.id.length>0){
+					for each(var diagram:Diagram in GlobalParams.diagrams.toArray()){
+						if(controller.bpmDefine.code == diagram.code&&controller.bpmDefine.id!=diagram.id){
+							Alert.show("您当前的流程图code:"+diagram.code+"与"+diagram.name+"的code一样，不能保存");
+							return;
+						}
+					}
+				}
+				showXml(null);
+				saveDFResult.token = saveDF.saveDF(xml);
+				
+			}
+			
+			protected function getDiagram_clickHandler(event:MouseEvent):void
+			{
+				saveDF.getDiagrams();
+			}
+			protected function newDiagram_clickHandler(event:MouseEvent):void
+			{
+				controller.clearDiagram(new FBpmDefine());
+				addStartAndEnd();
+			}
+			protected function myService_clickHandler(event:MouseEvent):void
+			{
+				saveDF.getService();
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<s:layout>
+		<s:VerticalLayout/>
+	</s:layout>
+	<fx:Declarations>
+		<s:CallResponder id="saveDFResult"/>
+		<savedf:SaveDF id="saveDF"
+					   fault="Alert.show(event.fault.faultString + '\n' + event.fault.faultDetail)"
+					   showBusyCursor="true"/>
+	</fx:Declarations>
+	
+	<fx:Style source="style.css"/>	
+	
+	<s:HGroup width="100%" verticalAlign="middle">
+		<s:Button id="newDiagram" label="添加新流程图" click="newDiagram_clickHandler(event)"/>
+		<s:Button id="myService" label="获取我的服务" click="myService_clickHandler(event)"/>
+		<s:Button id="getDiagram" label="获取我的流程图" click="getDiagram_clickHandler(event)"/>
+		<s:Button id="save" label="保存" click="save_clickHandler(event)"/>
+		<s:Label paddingLeft="580" text="{GlobalParams.userNick}"/>
+	</s:HGroup>
+	
+	
+	
+	<mx:HDividedBox width="100%" height="100%">
+		<mx:Accordion width="15%" height="100%">
+			<s:NavigatorContent width="100%" height="100%" label="服务节点">
+				<s:TileGroup id="services" left="10" right="10" top="15" height="100%"
+							 requestedColumnCount="2" requestedRowCount="1">
+				</s:TileGroup>
+			</s:NavigatorContent>
+			<s:NavigatorContent width="100%" height="100%" label="系统节点">
+				<s:TileGroup left="10" right="10" top="15" height="100%" requestedColumnCount="2"
+							 requestedRowCount="1">
+					<s:VGroup horizontalAlign="center">
+						<s:Image id="autoNode" width="20" height="20"
+								 mouseDown="node_clickHandler(event,autoNode,'com.taobao.tbbpm.define.flash.impl.FAutoTaskNode,com.taobao.tbbpm.define.figure.RectangleFigure,自动节点')"
+								 smooth="true" smoothingQuality="high" source="img/s_auto_task.png"/>
+						<s:Label width="70" text="自动节点" textAlign="center"/>
+					</s:VGroup>
+					<s:VGroup horizontalAlign="center">
+						<s:Image id="decisionNode" width="20" height="20"
+								 mouseDown="node_clickHandler(event,decisionNode,'com.taobao.tbbpm.define.flash.impl.FDecisionNode,com.taobao.tbbpm.define.figure.RhombusFigure,判断节点')"
+								 smooth="true" smoothingQuality="high" source="img/s_decision.png"/>
+						<s:Label width="70" text="判断节点" textAlign="center"/>
+					</s:VGroup>
+					
+					
+				</s:TileGroup>
+			</s:NavigatorContent>
+		</mx:Accordion>
+		<mx:TabNavigator id="editArea" width="65%" height="100%">
+			<s:NavigatorContent width="100%" height="100%" label="流程图">
+				<flexlib:DragScrollingCanvas width="100%" height="100%" horizontalScrollPolicy="auto"
+											 verticalScrollPolicy="auto">
+					<s:BorderContainer id="nodeGroup" width="100%" height="100%"
+									   doubleClickEnabled="true" dragDrop="dragDropHandler(event)"
+									   dragEnter="dragEnterHandler(event)" rollOverColor="#061327">
+						<mx:UIComponent id="uic" width="100%" height="100%"/>
+					</s:BorderContainer>
+					
+				</flexlib:DragScrollingCanvas>
+			</s:NavigatorContent>
+			<s:NavigatorContent width="100%" height="100%" label="源码">
+				<s:TextArea width="100%" height="100%" text="{saveDFResult.lastResult}"/>
+			</s:NavigatorContent>
+		</mx:TabNavigator>
+		
+		<s:Panel width="20%" height="100%" title="我的流程">
+			<mx:DataGrid width="100%" height="100%" dataProvider="{GlobalParams.diagrams}"
+						 editable="false" enabled="true" paddingBottom="2" paddingLeft="2"
+						 paddingRight="2" paddingTop="2" rowHeight="22" textAlign="center">
+				<mx:columns>
+					
+					<mx:DataGridColumn dataField="name" headerText="名称"/>
+					
+					<mx:DataGridColumn dataField="show" editable="false" headerText="打开"
+									   itemRenderer="com.taobao.tbbpm.view.ShowDiagram"/>
+					<mx:DataGridColumn dataField="publish" editable="false" headerText="发布"
+									   itemRenderer="com.taobao.tbbpm.view.PublishDiagram"/>
+					<mx:DataGridColumn dataField="deleteG" editable="false" headerText="删除"
+									   itemRenderer="com.taobao.tbbpm.view.DeleteDiagram"/>
+				</mx:columns>
+			</mx:DataGrid>
+		</s:Panel>
+	</mx:HDividedBox>
+</s:Application>

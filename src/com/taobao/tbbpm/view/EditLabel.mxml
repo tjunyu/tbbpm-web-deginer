@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx">
+	<s:layout>
+		<s:BasicLayout/>
+	</s:layout>
+	<fx:Script>
+		<![CDATA[
+			import com.taobao.tbbpm.define.flash.FMNode;
+			
+			import mx.events.FlexEvent;
+			[Bindable]public var mnode:FMNode;
+
+			/**
+			 * 修改名称
+			 */
+			[Bindable]public var _editable:Boolean=false;
+			public function set editable(editable:Boolean):void{
+				_editable=editable;
+				if(this._editable&&nameText){
+					nameText.setFocus();
+					nameText.selectAll();
+				}
+			}
+			public function get editable():Boolean{
+				return this._editable;
+			}
+			
+			protected function nameText_mouseFocusChangeHandler(event:FocusEvent):void
+			{
+				editable=false;
+			}
+			
+			protected function nameLabel_doubleClick(event:MouseEvent):void
+			{
+				editable=true;
+			}
+			
+			protected function nameText_enterHandler(event:FlexEvent):void
+			{
+				editable=false;
+			}  
+			
+			//样式
+			[Bindable]public var textAlign:String="center";
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		  
+	</fx:Declarations>
+	<s:Label id="nameLabel" doubleClickEnabled="true" doubleClick="nameLabel_doubleClick(event)" 
+			 text="{mnode.name}" left="0" right="0" top="0" bottom="0" maxDisplayedLines="1"
+			  textAlign="{textAlign}"
+			  verticalAlign="middle"
+			  />
+	<s:TextInput id="nameText" visible="@{_editable}" enter="nameText_enterHandler(event)"
+				 mouseFocusEnabled="true" mouseFocusChange="nameText_mouseFocusChangeHandler(event)"
+				 borderVisible="false" text="@{mnode.name}" left="0" right="0" top="0" bottom="0" borderAlpha="0.0"
+				 />
+</s:Group>
